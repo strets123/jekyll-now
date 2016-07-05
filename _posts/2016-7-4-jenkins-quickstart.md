@@ -7,6 +7,56 @@ The Jenkins continuous integration system is a fully featured, difficult to use 
 
 In this post I am going to describe how to get up and running quickly and use Jenkins to run a remote build script to generate a virtual machine template with Packer. This post can be useful in start-up situations where you are using a cloud-based bitbucket or other private git repository and you would like to test your installation script in different environments and then run your tests without paying more than $5-$10 per month for the tools and hosting.
 
+We start off with a new bitbucket github repo and add two files for our test:
+
+###mongodb.json
+
+{
+      "provisioners": [
+       
+        {
+          "type": "shell",
+          "execute_command": "bash '{{.Path}}'",
+          "scripts": [
+                "dependencies.sh"
+          ]
+          
+        }
+
+      ],
+
+      "post-processors": [
+      
+      ],
+
+      "variables": {
+        "access_key": "{{env `AWS_ACCESS_KEY`}}",
+        "secret_key": "{{env `AWS_SECRET_KEY`}}"
+      
+      },
+
+      "builders": [{
+        "type": "amazon-ebs",
+        "access_key": "{{user `access_key`}}",
+        "secret_key": "{{user `secret_key`}}",
+        "region": "us-west-2",
+        "source_ami": "ami-9abea4fb",
+        "instance_type": "t2.micro",
+        "ssh_username": "ubuntu",
+        "ami_name": "packer-example-latest"
+      }
+
+      ]
+    }
+    
+###dependencies.sh
+
+        set -e
+	sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv 7F0CEB10
+	echo "deb http://repo.mongodb.org/apt/ubuntu "$(lsb_release -sc)"/mongodb-org/3.0 multiverse" | sudo tee /etc/apt/sources.list.d/mongodb-org-3.0.list
+	sudo apt-get update
+	sudo apt-get install -y mongodb-org
+
 To set up Jenkins on AWS, use the [Bitnami Jenkins AMI](https://aws.amazon.com/marketplace/pp/B00NNZUF3Q/ref=srh_res_product_title?ie=UTF8&sr=0-2&qid=1467723585013) so that you can install it on the smallest VM possible. Following the installation process you will need to retrieve the generated password from the server logs, these can be found under instace actions in the EC2 console.
 
 Once you have your CI server up and running it will be available on [box-url]/jenkins. Next it is time to configure some plugins for Jenkins. In my case I installed the Bitbucket plugin and the git scm plugin and the credentials binding plugin. This is done via the "Manage Jenkins" menu item.
@@ -36,11 +86,20 @@ Click on credentials >> (global) >> Add credentials >>
 
 Then select secret text add as many secrets as you want, labelling the secrets with IDs
 
-We now need to create a build job on Jenkins to hold all of this configuration. 
+We now need to create a build job on Jenkins to hold all of this configuration. Go back to the dashboard and click New Item >> Freestyle project. You will then come to a large web form where your build is to be configured.
 
-Go back to the dashboard and click New Item >> Freestyle project.
+Name your project and then select git repositories under source code management. Under build triggers check "Build when a change is pushed to BitBucket". Under Build Environment check "Use secret text(s) or file(s)" and add the environment variable names and the IDs to which those variables need to attach. These IDs correspond to the credentials you created earlier.
 
-You will then come to a large web form where your build is to be configured.
+In the add build step dropdown click "Execute shell". You are now ready to add your build command as a shell script. This should obviously invoke other shell scripts so as not to end up putting all your deploy script in jenkins.
+
+In our case we are building our mongodb AMI so the build command is:
+
+    packer build mongodb.json
+
+
+
+
+
 
 
 
