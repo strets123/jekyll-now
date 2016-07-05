@@ -1,6 +1,6 @@
 ---
 layout: post
-title: Jenkins Quickstart with AWS and Packer
+title: Jenkins Quickstart with Bitbucket, AWS and Packer
 ---
 
 The Jenkins continuous integration system is a fully featured, difficult to use intimidating behemoth. That said it is also widely adopted, lightweight to run and free apart from the hosting costs.
@@ -96,7 +96,11 @@ In our case we are building our mongodb AMI so the build command is:
 
     packer build mongodb.json
 
+Now save the build job and test it by invoking manually. You should be able to see the output by clicking on the specific build ID on the left hand side then clicking "Console Output".
 
+Finally, in order to ensure that builds happen every time there is a commit, add the following URL to the webhooks repository setting in bitbucket.
+
+    http://my-jenkins-server.com/jenkins/bitbucket-hook/
 
 
 
