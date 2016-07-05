@@ -1,0 +1,12 @@
+---
+layout: post
+title: VMware converter to migrate Windows 10 machine to a virtualbox VM (no keyboard)
+---
+
+When purchasing a new laptop I like to run the windows install that comes with the laptop as a virtual machine on top of Ubuntu.
+
+In order to do this conversion, the [vmware converter tool](https://my.vmware.com/web/vmware/evalcenter?p=converter) works great. Tell it to save your windows install to a virtual disk image (VMDK format). This file can then be opened using virtualbox once you have installed ubuntu.
+
+For virtualbox to run 64bit VMs you may need to change settings in your bios under Security >> Intel Virutalization >> Enable.
+
+Once this is done you can then import the machine image as a Windows 10 64 bit VM. On your first boot of the VM you will find that the screen resolution is reduced and the keyboard may not work. [These instructions](https://blog.destephen.com/wordpress/?p=789) helped me resolve the no keyboard issue. In the meantime I used the on screen keyboard that comes under the ease of access menu either in the startup scrreen or in the control panel.
