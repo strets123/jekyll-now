@@ -11,7 +11,7 @@ We start off with a new bitbucket github repo and add two files for our test:
 
 ###mongodb.json
 
-{
+    {
       "provisioners": [
        
         {
