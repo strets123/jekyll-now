@@ -9,7 +9,7 @@ In this post I am going to describe how to get up and running quickly and use Je
 
 To set up Jenkins on AWS, use the [Bitnami Jenkins AMI](https://aws.amazon.com/marketplace/pp/B00NNZUF3Q/ref=srh_res_product_title?ie=UTF8&sr=0-2&qid=1467723585013) so that you can install it on the smallest VM possible. Following the installation process you will need to retrieve the generated password from the server logs, these can be found under instace actions in the EC2 console.
 
-Once you have your CI server up and running it will be available on [box-url]/jenkins. Next it is time to configure some plugins for Jenkins. In my case I installed the Bitbucket plugin and the git scm plugin. This is done via the "Manage Jenkins" menu item.
+Once you have your CI server up and running it will be available on [box-url]/jenkins. Next it is time to configure some plugins for Jenkins. In my case I installed the Bitbucket plugin and the git scm plugin and the credentials binding plugin. This is done via the "Manage Jenkins" menu item.
 
 Because we want to run our test installs etc. separately to this virtual machine on a standard Amazon ec2 machine or locally, then we use the packer tool to invoke our build script. To install packer, ssh to the bitnami box and run the following commands:
 
@@ -18,7 +18,34 @@ Because we want to run our test installs etc. separately to this virtual machine
 	unzip packer_0.10.1_linux_amd64.zip 
 	sudo ln -s ~/packer /usr/bin/packer
 
-Next you will need to create an access key and secret for the AWS API - this is so packer can call the api to create virtual machines and build your code. This is done via the AWS console
+Next you will need to create an access key and secret for the AWS API - this is so packer can call the api to create virtual machines and build your code. This is done via the AWS console.
+
+Now we set up our build job and our packer file. Here I am going to assume we want to simply install MongoDB and have that install script run by packer from a shell script in a git repository. We are aiming for the following workflow:
+
+1) User changes script in git repository
+2) Hook on commit triggers a build on ~Jenkins
+3) Jenkins passes AWS API credentials from its secrets database to environment variables in the execution environment.
+4) Jenkins checks out the latest version of the code and runs a simple bash script to start a packer build.
+5) Packer uses the AWS credentials to create an EC2 instance
+6) Packer ssh's to the instance and copies across the approriate build script as listed in the packer file
+7) Packer runs the build script and exits with an approriate status to show if the build works or not
+
+First add some credentials by using the credentials app, do this by:
+
+Click on credentials >> (global) >> Add credentials >>
+
+Then select secret text add as many secrets as you want, labelling the secrets with IDs
+
+We now need to create a build job on Jenkins to hold all of this configuration. 
+
+Go back to the dashboard and click New Item >> Freestyle project.
+
+You will then come to a large web form where your build is to be configured.
+
+
+
+
+
 
 
 
